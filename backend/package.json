@@ -1,0 +1,17 @@
+{
+  "name": "sql-injection-lab",
+  "version": "1.0.0",
+  "description": "Vulnerable backend for SQL Injection lab - bypass login, extract data",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "init-db": "node initDb.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-session": "^1.18.0",
+    "pg": "^8.18.0"
+  }
+}

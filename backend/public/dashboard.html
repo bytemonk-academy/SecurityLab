@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — SQL Injection Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0a0612;
+      --bg-card: rgba(28, 15, 48, 0.75);
+      --purple-glow: #8b5cf6;
+      --purple-mid: #a78bfa;
+      --purple-light: #c4b5fd;
+      --accent-cyan: #22d3ee;
+      --border-glow: rgba(139, 92, 246, 0.5);
+      --text-dim: #94a3b8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-deep);
+      color: var(--purple-light);
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background-size: 50px 50px;
+      background-image:
+        linear-gradient(rgba(139, 92, 246, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.04) 1px, transparent 1px);
+      pointer-events: none;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    .orb-1 { width: 350px; height: 350px; background: var(--purple-glow); top: -80px; right: -80px; }
+    .orb-2 { width: 280px; height: 280px; background: #6366f1; bottom: -60px; left: -60px; }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      background: linear-gradient(135deg, var(--purple-light), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links { display: flex; gap: 0.75rem; align-items: center; }
+
+    .back, .admin-link {
+      color: var(--purple-mid);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .back:hover, .admin-link:hover {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: var(--purple-glow);
+    }
+
+    .admin-link { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+
+    .welcome {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .welcome h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--purple-light);
+    }
+
+    .welcome p { color: var(--text-dim); font-size: 0.9rem; }
+
+    .welcome .credentials {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(139, 92, 246, 0.25);
+    }
+
+    .welcome .credentials .row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .welcome .credentials .label { color: var(--text-dim); min-width: 5rem; }
+    .welcome .credentials .value { color: var(--purple-light); word-break: break-all; }
+
+    .search-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
+      backdrop-filter: blur(12px);
+    }
+    .search-card h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      color: var(--purple-light);
+    }
+    .search-card p.sub { color: var(--text-dim); font-size: 0.8rem; margin-bottom: 1rem; }
+    .search-card input {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.6rem 1rem;
+      background: rgba(15, 10, 28, 0.8);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 8px;
+      color: var(--purple-light);
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    .search-card .btn {
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, var(--purple-glow), #6366f1);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .search-card pre {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: rgba(0,0,0,0.3);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="container">
+    <header>
+      <span class="logo">PORTAL</span>
+      <div class="nav-links">
+        <a href="/admin.html" class="admin-link" id="adminLink" style="display: none;">ADMIN PANEL</a>
+        <a href="/index.html" class="back">← SIGN OUT</a>
+      </div>
+    </header>
+
+    <div class="welcome">
+      <h1 id="welcomeTitle">Welcome to the Dashboard</h1>
+      <p>Good to see you here.</p>
+      <div class="credentials" id="credentials"></div>
+    </div>
+
+    <div class="search-card">
+      <h2>User search (Part 5 – Data extraction)</h2>
+      <p class="sub">Search by email. Try UNION injection: e.g. <code>x' UNION SELECT email, password FROM users --</code></p>
+      <input type="text" id="searchInput" placeholder="e.g. test@example.com or injection payload" />
+      <button type="button" class="btn" id="searchBtn">Search</button>
+      <pre id="searchResults">(no results yet)</pre>
+    </div>
+  </div>
+
+  <script>
+    fetch('/dashboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({}),
+      credentials: 'same-origin'
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.error) {
+          window.location.href = '/index.html';
+          return;
+        }
+        if (res.username) document.getElementById('welcomeTitle').textContent = 'Welcome, ' + res.username + '.';
+        var creds = document.getElementById('credentials');
+        if (res.username) creds.innerHTML += '<div class="row"><span class="label">Username</span><span class="value">' + escapeHtml(res.username) + '</span></div>';
+        if (res.email) creds.innerHTML += '<div class="row"><span class="label">Email</span><span class="value">' + escapeHtml(res.email) + '</span></div>';
+        if (res.role) creds.innerHTML += '<div class="row"><span class="label">Role</span><span class="value">' + escapeHtml(res.role) + '</span></div>';
+        if (res.role === 'admin') document.getElementById('adminLink').style.display = 'inline-block';
+      })
+      .catch(function() { window.location.href = '/index.html'; });
+
+    function escapeHtml(s) {
+      var div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    var searchInput = document.getElementById('searchInput');
+    var searchResults = document.getElementById('searchResults');
+    document.getElementById('searchBtn').onclick = function() {
+      var q = searchInput.value.trim();
+      if (!q) return;
+      fetch('/api/search?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          searchResults.textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(function(err) {
+          searchResults.textContent = 'Error: ' + err.message;
+        });
+    };
+  </script>
+</body>
+</html>

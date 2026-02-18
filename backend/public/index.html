@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — SQL Injection Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0a0612;
+      --bg-card: rgba(28, 15, 48, 0.75);
+      --purple-glow: #8b5cf6;
+      --purple-mid: #a78bfa;
+      --purple-light: #c4b5fd;
+      --accent-cyan: #22d3ee;
+      --border-glow: rgba(139, 92, 246, 0.5);
+      --text-dim: #94a3b8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-deep);
+      color: var(--purple-light);
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(139, 92, 246, 0.03) 50%, transparent 100%),
+        linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.03) 50%, transparent 100%);
+      background-size: 60px 60px;
+      animation: gridPulse 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gridPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--purple-glow); top: -100px; right: -100px; animation: orbFloat 12s ease-in-out infinite; }
+    .orb-2 { width: 300px; height: 300px; background: #6366f1; bottom: -50px; left: -50px; animation: orbFloat 15s ease-in-out infinite reverse; }
+    .orb-3 { width: 200px; height: 200px; background: var(--accent-cyan); top: 50%; left: 20%; animation: orbFloat 10s ease-in-out infinite 2s; }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--purple-light), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      letter-spacing: 0.15em;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      animation: cardIn 0.6s ease-out;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .tab:hover { color: var(--purple-light); }
+    .tab.active { color: var(--purple-light); font-weight: 600; }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--purple-glow), var(--accent-cyan));
+      border-radius: 2px 2px 0 0;
+    }
+
+    .form-panel { display: none; }
+    .form-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.05em;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(15, 10, 28, 0.8);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 8px;
+      color: var(--purple-light);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input::placeholder { color: rgba(148, 163, 184, 0.5); }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--purple-glow);
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      margin-top: 0.5rem;
+      background: linear-gradient(135deg, var(--purple-glow), #6366f1);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+    }
+
+    .error {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="container">
+    <h1 class="logo">PORTAL</h1>
+    <p class="tagline">SQL INJECTION LAB — SIGN IN OR CREATE AN ACCOUNT</p>
+
+    <div class="card">
+      <div class="tabs">
+        <button type="button" class="tab active" data-tab="login">LOGIN</button>
+        <button type="button" class="tab" data-tab="signup">SIGN UP</button>
+      </div>
+
+      <form id="loginForm" class="form-panel active" method="POST" action="/dashboard.html">
+        <div class="form-group">
+          <label>EMAIL</label>
+          <input type="text" name="email" placeholder="user@test.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>PASSWORD</label>
+          <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <div id="loginError" class="error"></div>
+        <button type="submit" class="btn">LOG IN</button>
+      </form>
+
+      <form id="signupForm" class="form-panel" method="POST" action="/dashboard.html">
+        <div class="form-group">
+          <label>USERNAME</label>
+          <input type="text" name="username" placeholder="johndoe" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>EMAIL</label>
+          <input type="email" name="email" placeholder="john@example.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>PASSWORD</label>
+          <input type="password" name="password" placeholder="••••••••" required autocomplete="new-password" minlength="6">
+        </div>
+        <div id="signupError" class="error"></div>
+        <button type="submit" class="btn">CREATE ACCOUNT</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab').forEach(function(tab) {
+      tab.onclick = function() {
+        var t = tab.getAttribute('data-tab');
+        document.querySelectorAll('.tab').forEach(function(x) { x.classList.remove('active'); });
+        document.querySelectorAll('.form-panel').forEach(function(x) { x.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById(t + 'Form').classList.add('active');
+        document.getElementById(t + 'Error').textContent = '';
+      };
+    });
+
+    document.getElementById('loginForm').onsubmit = function(e) {
+      e.preventDefault();
+      var form = e.target;
+      var data = new URLSearchParams(new FormData(form));
+      document.getElementById('loginError').textContent = '';
+      fetch('/login', {
+        method: 'POST',
+        body: data,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        credentials: 'same-origin'
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (res.redirect) window.location.href = res.redirect;
+          if (res.error) document.getElementById('loginError').textContent = res.error;
+        })
+        .catch(function() {
+          document.getElementById('loginError').textContent = 'Request failed.';
+        });
+    };
+
+    document.getElementById('signupForm').onsubmit = function(e) {
+      e.preventDefault();
+      var form = e.target;
+      var data = new URLSearchParams(new FormData(form));
+      document.getElementById('signupError').textContent = '';
+      fetch('/signup', {
+        method: 'POST',
+        body: data,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        credentials: 'same-origin'
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+          if (res.redirect) window.location.href = res.redirect;
+          if (res.error) document.getElementById('signupError').textContent = res.error;
+        })
+        .catch(function() {
+          document.getElementById('signupError').textContent = 'Request failed.';
+        });
+    };
+  </script>
+</body>
+</html>
