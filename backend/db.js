@@ -32,6 +32,16 @@ async function initDb() {
       `);
       console.log('Seeded users');
     }
+
+    await client.query(`
+      INSERT INTO users (username, email, password, role) VALUES
+      ('Admin', 'admin@bytemonk.io', 'admin123', 'admin')
+      ON CONFLICT (email) DO UPDATE SET
+        username = EXCLUDED.username,
+        password = EXCLUDED.password,
+        role = EXCLUDED.role
+    `);
+    console.log('Admin user admin@bytemonk.io ensured');
   } finally {
     client.release();
   }

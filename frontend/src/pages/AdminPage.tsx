@@ -33,60 +33,54 @@ export default function AdminPage() {
       <div className="orb orb-1" />
       <div className="orb orb-2" />
 
-      <div style={{ position: 'relative', zIndex: 2, minHeight: '100vh', padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <span className="portal-logo" style={{ fontSize: '1.2rem', letterSpacing: '0.15em' }}>PORTAL</span>
-          <Link
-            to="/dashboard"
-            style={{
-              color: 'var(--purple-mid)',
-              fontSize: '0.85rem',
-              padding: '0.5rem 1rem',
-              border: '1px solid rgba(139, 92, 246, 0.4)',
-              borderRadius: 6,
-              textDecoration: 'none',
-            }}
-          >
-            ← DASHBOARD
-          </Link>
+      <div className="dashboard-layout admin-layout">
+        <header className="dashboard-header">
+          <span className="portal-logo dashboard-logo">PORTAL</span>
+          <Link to="/dashboard" className="dashboard-link">← DASHBOARD</Link>
         </header>
 
-        <div className="portal-card">
-          <h1 style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '1.25rem', marginBottom: '1rem' }}>
-            Admin Panel
-          </h1>
+        <div className="portal-card admin-panel-card">
+          <h1 className="admin-panel-title">Admin Panel</h1>
+
           {data.error && (
-            <p style={{ color: '#f87171', marginTop: '1rem' }}>{data.error}</p>
+            <p className="admin-error">{data.error}</p>
           )}
+
           {data.flag && (
-            <div style={{ fontSize: '1rem', color: 'var(--accent-cyan)', padding: '1rem', background: 'rgba(34, 211, 238, 0.1)', border: '1px solid rgba(34, 211, 238, 0.3)', borderRadius: 8, marginBottom: '1.5rem', wordBreak: 'break-all' }}>
-              Flag: {data.flag}
+            <div className="admin-flag">
+              <span className="admin-flag-label">Flag</span>
+              <code className="admin-flag-value">{data.flag}</code>
             </div>
           )}
-          {data.message && (
-            <p style={{ color: 'var(--text-dim)', marginBottom: '1rem' }}>{data.message}</p>
+
+          {data.message && !data.error && (
+            <p className="admin-message">{data.message}</p>
           )}
+
           {data.users && data.users.length > 0 && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', borderBottom: '1px solid rgba(139, 92, 246, 0.2)', color: 'var(--text-dim)' }}>ID</th>
-                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', borderBottom: '1px solid rgba(139, 92, 246, 0.2)', color: 'var(--text-dim)' }}>Username</th>
-                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', borderBottom: '1px solid rgba(139, 92, 246, 0.2)', color: 'var(--text-dim)' }}>Email</th>
-                  <th style={{ padding: '0.6rem 0.75rem', textAlign: 'left', borderBottom: '1px solid rgba(139, 92, 246, 0.2)', color: 'var(--text-dim)' }}>Role</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.users.map((u) => (
-                  <tr key={u.id}>
-                    <td style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid rgba(139, 92, 246, 0.2)' }}>{u.id}</td>
-                    <td style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid rgba(139, 92, 246, 0.2)' }}>{u.username}</td>
-                    <td style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid rgba(139, 92, 246, 0.2)' }}>{u.email}</td>
-                    <td style={{ padding: '0.6rem 0.75rem', borderBottom: '1px solid rgba(139, 92, 246, 0.2)' }}>{u.role}</td>
+            <div className="admin-table-wrap">
+              <h2 className="admin-table-title">Registered users</h2>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.users.map((u) => (
+                    <tr key={u.id}>
+                      <td>{u.id}</td>
+                      <td>{u.username}</td>
+                      <td>{u.email}</td>
+                      <td><span className={'admin-role admin-role-' + u.role}>{u.role}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

@@ -48,61 +48,64 @@ export default function DashboardPage() {
       <div className="grid-bg" />
       <div className="orb orb-1" />
       <div className="orb orb-2" />
-      <div style={{ position: 'relative', zIndex: 2, minHeight: '100vh', padding: '2rem', maxWidth: 900, margin: '0 auto' }}>
-        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <span className="portal-logo" style={{ fontSize: '1.2rem', letterSpacing: '0.15em' }}>PORTAL</span>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      <div className="dashboard-layout">
+        <header className="dashboard-header">
+          <span className="portal-logo dashboard-logo">PORTAL</span>
+          <div className="dashboard-nav">
             {user.role === 'admin' && (
-              <Link to="/admin" style={{ color: 'var(--accent-cyan)', fontSize: '0.85rem', padding: '0.5rem 1rem', border: '1px solid var(--accent-cyan)', borderRadius: 6, textDecoration: 'none' }}>
-                ADMIN PANEL
-              </Link>
+              <Link to="/admin" className="dashboard-link dashboard-link-admin">ADMIN PANEL</Link>
             )}
-            <Link to="/" style={{ color: 'var(--purple-mid)', fontSize: '0.85rem', padding: '0.5rem 1rem', border: '1px solid rgba(139, 92, 246, 0.4)', borderRadius: 6, textDecoration: 'none' }}>
-              ← SIGN OUT
-            </Link>
+            <Link to="/" className="dashboard-link">← SIGN OUT</Link>
           </div>
         </header>
-        <div className="portal-card" style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-            Welcome, {user.username ?? 'User'}.
-          </h1>
-          <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem' }}>Good to see you here.</p>
-          <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(139, 92, 246, 0.25)' }}>
-            {user.username && (
-              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--text-dim)', minWidth: '5rem' }}>Username</span>
-                <span>{user.username}</span>
-              </div>
-            )}
-            {user.email && (
-              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--text-dim)', minWidth: '5rem' }}>Email</span>
-                <span>{user.email}</span>
-              </div>
-            )}
-            {user.role && (
-              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--text-dim)', minWidth: '5rem' }}>Role</span>
-                <span>{user.role}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="portal-card">
-          <h2 style={{ fontFamily: 'Orbitron, sans-serif', fontSize: '1rem', marginBottom: '0.75rem' }}>User search (Part 5 – Data extraction)</h2>
-          <p style={{ color: 'var(--text-dim)', fontSize: '0.8rem', marginBottom: '1rem' }}>
-            Try UNION injection: e.g. x&apos; UNION SELECT email, password FROM users --
-          </p>
-          <input
-            type="text"
-            className="portal-input"
-            style={{ maxWidth: 400, marginBottom: '0.75rem' }}
-            placeholder="e.g. test@example.com or injection payload"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button type="button" className="portal-btn" style={{ width: 'auto', padding: '0.5rem 1rem' }} onClick={runSearch}>Search</button>
-          <pre style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.3)', borderRadius: 8, fontSize: '0.8rem', overflow: 'auto', color: 'var(--accent-cyan)' }}>{searchResults}</pre>
+
+        <div className="dashboard-grid">
+          <section className="portal-card dashboard-welcome">
+            <h1 className="dashboard-title">Welcome, {user.username ?? 'User'}.</h1>
+            <p className="dashboard-subtitle">Good to see you here.</p>
+            <div className="dashboard-credentials">
+              {user.username && (
+                <div className="dashboard-row">
+                  <span className="dashboard-label">Username</span>
+                  <span className="dashboard-value">{user.username}</span>
+                </div>
+              )}
+              {user.email && (
+                <div className="dashboard-row">
+                  <span className="dashboard-label">Email</span>
+                  <span className="dashboard-value">{user.email}</span>
+                </div>
+              )}
+              {user.role && (
+                <div className="dashboard-row">
+                  <span className="dashboard-label">Role</span>
+                  <span className="dashboard-value">{user.role}</span>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <section className="portal-card dashboard-search-card">
+            <h2 className="dashboard-search-title">Search users</h2>
+            <p className="dashboard-search-desc">Find team members by email address.</p>
+            <div className="dashboard-search-row">
+              <input
+                type="text"
+                className="portal-input dashboard-search-input"
+                placeholder="Search by email address"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && runSearch()}
+              />
+              <button type="button" className="portal-btn dashboard-search-btn" onClick={runSearch}>
+                Search
+              </button>
+            </div>
+            <div className="dashboard-results">
+              <span className="dashboard-results-label">Results</span>
+              <pre className="dashboard-results-pre">{searchResults}</pre>
+            </div>
+          </section>
         </div>
       </div>
     </>
