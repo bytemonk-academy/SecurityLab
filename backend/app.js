@@ -34,7 +34,6 @@ app.get('/', (req, res) => {
   res.redirect('/index.html');
 });
 
-' UNION SELECT 1, email || ' | ' || password FROM users --
 
 
 
